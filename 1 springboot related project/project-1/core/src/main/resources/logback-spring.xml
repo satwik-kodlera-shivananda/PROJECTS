@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <!-- Scan for changes every 30 seconds -->
+    <configuration scan="true" scanPeriod="30 seconds">
+        <statusListener class="ch.qos.logback.core.status.OnConsoleStatusListener"/>
+    </configuration>
+
+    <!-- Console Appender (Logs INFO and above) -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>INFO</level>  <!-- Logs INFO, WARN, and ERROR (No DEBUG, TRACE) -->
+        </filter>
+    </appender>
+
+    <!-- File Appender (Logs DEBUG and above, with daily rolling) -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/application.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>logs/application-%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>  <!-- Keep logs for 30 days -->
+            <totalSizeCap>3GB</totalSizeCap>  <!-- Max log storage: 3GB -->
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>DEBUG</level>  <!-- Logs DEBUG, INFO, WARN, ERROR -->
+        </filter>
+    </appender>
+
+    <!-- Logger Settings -->
+    <logger name="com.example" level="DEBUG"/>  <!-- Debug logs for application -->
+    <logger name="org.springframework" level="INFO"/>  <!-- Only INFO logs for Spring -->
+
+    <!-- Root Logger -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
+    </root>
+
+</configuration>
