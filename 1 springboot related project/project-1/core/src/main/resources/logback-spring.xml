@@ -18,9 +18,9 @@
 
     <!-- File Appender (Logs DEBUG and above, with daily rolling) -->
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>logs/application.log</file>
+        <file>src/main/resources/logs/application.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>logs/application-%d{yyyy-MM-dd}.log</fileNamePattern>
+            <fileNamePattern>src/main/resources/logs/application-%d{yyyy-MM-dd}.log</fileNamePattern>
             <maxHistory>30</maxHistory>  <!-- Keep logs for 30 days -->
             <totalSizeCap>3GB</totalSizeCap>  <!-- Max log storage: 3GB -->
         </rollingPolicy>
