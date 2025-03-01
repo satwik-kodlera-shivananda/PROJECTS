@@ -1,11 +1,11 @@
-We will take order and address entity to perform one-to-one mapping.
+We will take order and addressbidir entity to perform one-to-one mapping.
 
-Each order has exactly 1 address and each address belongs to 1 order.
+Each order has exactly 1 addressbidir and each addressbidir belongs to 1 order.
 
 we use @oneToOne mapping annotation
 
 order is source entity
-address is target entity.
+addressbidir is target entity.
 
 
 @OneToOne mapping can be unidirectional or bidirectional
@@ -23,7 +23,7 @@ The Source entity must use the mappedBy attribute to define the bidirectional on
 UNIDIRECTIONAL   -> SRC TBL CONTAINS FOREIGN KEY
 BIDIRECTIONAL -> TARGET ENTITY CONTAINS FOREIGN KEY  SRC ENTITY HAS TO USE MAPPEDBY ATTRIBUTE
 
-UNIDIRECTIONAL: If we load order entity,then we can get associated  billing address  using unidirectional mapping  but vice versa is not possible
+UNIDIRECTIONAL: If we load order entity,then we can get associated  billing addressbidir  using unidirectional mapping  but vice versa is not possible
 
 
 
@@ -31,7 +31,7 @@ PRODUCT ENTITY AND PRODUCT REPOSITORY IS ALREADY AVAILABLE
 
 CASCADING EXAMPLES:
 
-    when we delete order entity, billing address entity should also get deleted.
+    when we delete order entity, billing addressbidir entity should also get deleted.
 
     ORDERS AND ORDERITEMS RELATIONSHIP:
     CASCADING IS THE WAY TO ACHIEVE THIS. WHEN WE PERFORM SOME ACTION ON THE TARGET ENTITY,
@@ -54,7 +54,7 @@ WHENEVER WE SAVE THE ORDER, ADDRESS ENTITY WILL GET LOADED FIRST AND THEN ORDER 
 Hibernate:
     insert
     into
-        address
+        addressbidir
         (city, country, state, street, zip_code)
     values
         (?, ?, ?, ?, ?)
@@ -75,17 +75,17 @@ Hibernate:
 Hibernate:
     select         o1_0.id,        ba1_0.id,        ba1_0.city,        ba1_0.country,        ba1_0.state,        ba1_0.street,
         ba1_0.zip_code,        o1_0.date_created,        o1_0.last_updated,        o1_0.order_tracking_number,        o1_0.status,
-        o1_0.total_price,        o1_0.total_quantity     from        oders o1_0    left join        address ba1_0             on ba1_0.id=o1_0.billing_address_id
+        o1_0.total_price,        o1_0.total_quantity     from        oders o1_0    left join        addressbidir ba1_0             on ba1_0.id=o1_0.billing_address_id
     where        o1_0.id=?
 
 Hibernate:
     select          o1_0.id,        ba1_0.id,        ba1_0.city,        ba1_0.country,        ba1_0.state,
         ba1_0.street,        ba1_0.zip_code,        o1_0.date_created,        o1_0.last_updated,        o1_0.order_tracking_number,
         o1_0.status,        o1_0.total_price,        o1_0.total_quantity    from        oders o1_0    left join
-        address ba1_0            on ba1_0.id=o1_0.billing_address_id    where        o1_0.id=?
+        addressbidir ba1_0            on ba1_0.id=o1_0.billing_address_id    where        o1_0.id=?
 
 Hibernate:
-    update address set  city=?,  country=?, state=?,street=?,  zip_code=?  where  id=?
+    update addressbidir set  city=?,  country=?, state=?,street=?,  zip_code=?  where  id=?
 
 Hibernate:
     update  oders set  billing_address_id=?,date_created=?,last_updated=?,order_tracking_number=?, status=?, total_price=?,total_quantity=? where id=?
@@ -113,9 +113,9 @@ Hibernate:
     select o1_0.id,ba1_0.id,
         ba1_0.city,ba1_0.country,ba1_0.state,ba1_0.street, ba1_0.zip_code, o1_0.date_created,o1_0.last_updated,
         o1_0.order_tracking_number,o1_0.status, o1_0.total_price, o1_0.total_quantity
-    from oders o1_0 left join address ba1_0 on ba1_0.id=o1_0.billing_address_id where o1_0.id=?
+    from oders o1_0 left join addressbidir ba1_0 on ba1_0.id=o1_0.billing_address_id where o1_0.id=?
 
 Hibernate:
     delete from oders where id=?
 Hibernate:
-    delete from address where id=?
+    delete from addressbidir where id=?

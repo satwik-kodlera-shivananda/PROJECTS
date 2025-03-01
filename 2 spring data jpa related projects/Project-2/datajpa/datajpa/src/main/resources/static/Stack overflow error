@@ -1,0 +1,104 @@
+java.lang.StackOverflowError
+	at com.springboot.datajpa.model.bidirectionalmapping.Ordersbidir.toString(Ordersbidir.java:13)
+ChatGPT said:
+A StackOverflowError in Java usually happens due to infinite recursion, which often occurs when two entities have bidirectional relationships and the toString() method calls each other endlessly.
+
+What's Happening?
+From your error message:
+
+The Ordersbidir entity has a toString() method.
+Inside toString(), it's likely referencing another entity (e.g., Customerbidir).
+If Customerbidir also has a toString() that references Ordersbidir, they keep calling each other infinitely, causing a StackOverflowError.
+Example of the Issue:
+Ordersbidir.java
+java
+Copy
+Edit
+@Entity
+public class Ordersbidir {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne
+    @JoinColumn(name = "customer_id")
+    private Customerbidir customer;
+
+    @Override
+    public String toString() {
+        return "Ordersbidir{id=" + id + ", customer=" + customer + "}"; // 🚨 Problem! Calls customer's toString()
+    }
+}
+Customerbidir.java
+java
+Copy
+Edit
+@Entity
+public class Customerbidir {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @OneToMany(mappedBy = "customer")
+    private List<Ordersbidir> orders;
+
+    @Override
+    public String toString() {
+        return "Customerbidir{id=" + id + ", orders=" + orders + "}"; // 🚨 Problem! Calls orders' toString()
+    }
+}
+Why is this a Problem?
+Ordersbidir.toString() calls customer.toString().
+Customerbidir.toString() calls orders.toString().
+This creates an infinite loop, leading to StackOverflowError.
+Solutions
+1. Remove the toString() method (Best if you don't need it)
+If toString() isn't necessary, simply remove it or use Lombok's @ToString.Exclude to avoid the circular call.
+
+2. Use @JsonIgnore or @ToString.Exclude to Break the Loop
+If this happens due to JSON serialization (e.g., in a REST API), you can ignore the bidirectional reference.
+
+Modify one side of the relationship:
+
+java
+Copy
+Edit
+@ManyToOne
+@JoinColumn(name = "customer_id")
+@JsonIgnore  // Prevents infinite recursion
+private Customerbidir customer;
+Or, if using Lombok:
+
+java
+Copy
+Edit
+@ToString.Exclude  // Prevents calling toString() on orders
+@OneToMany(mappedBy = "customer")
+private List<Ordersbidir> orders;
+3. Modify toString() to Prevent Infinite Calls
+Instead of calling customer.toString(), print only the ID to avoid recursion:
+
+java
+Copy
+Edit
+@Override
+public String toString() {
+    return "Ordersbidir{id=" + id + ", customerId=" + (customer != null ? customer.getId() : null) + "}";
+}
+Similarly, modify Customerbidir:
+
+java
+Copy
+Edit
+@Override
+public String toString() {
+    return "Customerbidir{id=" + id + ", ordersSize=" + (orders != null ? orders.size() : 0) + "}";
+}
+Final Thoughts
+The error is happening because of infinite recursion between Ordersbidir and Customerbidir in their toString() methods. The best solutions are: ✅ Use @JsonIgnore or @ToString.Exclude
+✅ Modify toString() to print only IDs
+✅ Remove toString() if unnecessary
+
+Let me know if you need further help! 🚀
