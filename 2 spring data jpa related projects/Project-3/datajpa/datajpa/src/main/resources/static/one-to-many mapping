@@ -1,0 +1,32 @@
+We will take Order and the OrderItem entities to perform One to Many mapping.
+One Order has many OrderItem and many OrderItem belongs to one order.
+
+In a Relational database system, a one-to-many association links two tables
+based on a foreign key column so that the child table
+record references the Primary Key of the parent table row.
+
+UNIDIRECTIONAL:
+its simple. it's just the parent-side that defines the relationship
+we use only @OneToMany annotation
+
+
+BIDIRECTIONAL:
+we use @OneToMany and @ManyToOne annotations
+Child entity should provide @ManyToOne annotation.
+
+
+1 Order -> Many OrderItem
+1 OrderItem -> 1 Product        btn orderItem and product , already there is onetoone Mapping.
+
+
+
+1 2 MANY -> SRC TABLE PK IS CHILD TABLE FOREIGN KEY
+
+
+DEFAULT FETCH TYPES:
+
+ONETOMANY ->    LAZY
+ONETOONE ->     EAGER
+MANYTOONE ->    EAGER
+MANYTOMANY ->   LAZY
+
