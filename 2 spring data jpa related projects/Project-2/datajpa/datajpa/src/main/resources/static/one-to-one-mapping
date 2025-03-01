@@ -1,0 +1,37 @@
+We will take order and address entity to perform one-to-one mapping.
+
+Each order has exactly 1 address and each address belongs to 1 order.
+
+we use @oneToOne mapping annotation
+
+order is source entity
+address is target entity.
+
+
+@OneToOne mapping can be unidirectional or bidirectional
+
+In Unidirectional association, Source entity has a relationship field that refers to the target
+entity and the source entity's table contains the foreign key.
+
+In bidirectional association, each entity has a relationship field that refers to
+each other and the target entity's table contains the foreign key.
+The Source entity must use the mappedBy attribute to define the bidirectional one-to-one mapping.
+
+
+
+
+UNIDIRECTIONAL   -> SRC TBL CONTAINS FOREIGN KEY
+BIDIRECTIONAL -> TARGET ENTITY CONTAINS FOREIGN KEY  SRC ENTITY HAS TO USE MAPPEDBY ATTRIBUTE
+
+UNIDIRECTIONAL: If we load order entity,then we can get associated  billing address  using unidirectional mapping  but vice versa is not possible
+
+
+
+PRODUCT ENTITY AND PRODUCT REPOSITORY IS ALREADY AVAILABLE
+
+
+
+
+
+
+
