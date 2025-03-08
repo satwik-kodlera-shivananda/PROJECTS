@@ -1,0 +1,23 @@
+Key concepts of AOP
+
+
+Concept	                        Description
+Aspect                  	A module that contains cross-cutting concerns (e.g., logging aspect, security aspect).
+Advice	                    Action taken by an aspect at a specific join point (e.g., @Before, @After, @Around).
+Join Point	                A specific point in application execution where an aspect can be applied (e.g., method execution).
+Pointcut	                A set of join points where advice is applied. It defines when and where an aspect should run.
+Target	                    The class on which an aspect is applied.
+Proxy	                    A dynamically created object that wraps the target object and applies advice.
+Weaving	                    The process of applying aspects to the target object at compile-time, load-time, or runtime.
+
+
+@Aspect
+@Before	Runs before the method execution.
+@After	Runs after the method execution (regardless of success or failure).
+@AfterReturning	Runs only if the method completes successfully.
+@AfterThrowing	Runs only if the method throws an exception.
+@Around	Runs before and after method execution. Provides full control over method invocation.
+
+*In SpringBoot Automatically Starter-AOP concept is implemented.
+
+
