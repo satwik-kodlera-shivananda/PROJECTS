@@ -1,0 +1,366 @@
+In Spring Boot, various runtime errors can occur due to misconfigurations, bean definition issues,
+dependency injection problems, and incorrect property settings.
+
+Below are some common errors along with code examples and solutions.
+
+***************************************************************************************************************
+1. NoSuchBeanDefinitionException
+
+Error Scenario: Trying to Inject a Non-Existent Bean
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+@Component
+public class OrderService {
+
+    @Autowired
+    private PaymentService paymentService; // ❌ No bean found for PaymentService
+}
+
+Cause:
+No @Service or @Component annotation on PaymentService.
+@ComponentScan is not configured properly.
+
+Solution:
+Ensure that PaymentService is a Spring-managed bean:
+
+import org.springframework.stereotype.Service;
+
+@Service
+public class PaymentService {
+    public void processPayment() {
+        System.out.println("Payment processed!");
+    }
+}
+***************************************************************************************************************
+
+
+
+2. BeanCurrentlyInCreationException (Circular Dependency)
+Error Scenario: Circular Dependency Between Two Beans
+
+
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+@Component
+public class A {
+    @Autowired
+    private B b;
+}
+
+@Component
+public class B {
+    @Autowired
+    private A a;
+}
+
+
+Cause:
+A depends on B, and B depends on A, creating an infinite loop.
+
+Solution:
+Use @Lazy on one of the dependencies to break the cycle:
+
+@Component
+public class A {
+    @Autowired
+    @Lazy
+    private B b;
+}
+
+
+******************************************************************************************************************************************************************
+
+3. UnsatisfiedDependencyException
+
+Error Scenario: Missing Constructor Dependency
+
+import org.springframework.stereotype.Component;
+
+@Component
+public class CarService {
+    private Engine engine; // ❌ No bean found for Engine
+
+    public CarService(Engine engine) {
+        this.engine = engine;
+    }
+}
+
+Cause:
+No bean is available for Engine
+
+Solution:
+Define Engine as a Spring bean:
+
+@Component
+public class Engine {
+}
+
+******************************************************************************************************************************************************************
+
+4. BeanDefinitionOverrideException (Spring Boot 2.1+)
+
+Error Scenario: Defining the Same Bean Twice
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class AppConfig {
+
+    @Bean
+    public String message() {
+        return "Hello, World!";
+    }
+
+    @Bean
+    public String message() { // ❌ Duplicate bean name
+        return "Hello again!";
+    }
+}
+
+Solution:
+Ensure unique bean names or allow overriding:
+spring.main.allow-bean-definition-overriding=true
+
+
+******************************************************************************************************************************************************************
+
+5. NoSuchMethodException (Bean Instantiation Issue)
+
+Error Scenario: Spring Cannot Instantiate a Bean
+
+
+import org.springframework.stereotype.Component;
+
+@Component
+public class DatabaseConnection {
+    private DatabaseConnection() { // ❌ Private constructor
+    }
+}
+
+Cause:
+Spring tries to instantiate a class, but the constructor is private.
+
+
+Solution:
+Make the constructor public or define a factory method:
+
+@Component
+public class DatabaseConnection {
+    public DatabaseConnection() {
+    }
+}
+
+******************************************************************************************************************************************************************
+
+6. PropertyNotFoundException
+Error Scenario: Missing Configuration Property
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+@Component
+public class ConfigService {
+
+    @Value("${app.url}") // ❌ app.url not defined in properties
+    private String appUrl;
+}
+
+Solution:
+Add the missing property in application.properties:
+
+app.url=http://example.com
+
+******************************************************************************************************************************************************************
+
+
+7. TransactionRequiredException
+
+Error Scenario: Using JPA Without a Transaction
+
+import jakarta.persistence.EntityManager;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+@Service
+public class UserService {
+
+    @Autowired
+    private EntityManager entityManager;
+
+    public void saveUser(User user) {
+        entityManager.persist(user); // ❌ Transaction required
+    }
+}
+
+
+
+
+Solution:
+Wrap the method in @Transactional:
+
+import org.springframework.transaction.annotation.Transactional;
+
+@Transactional
+public void saveUser(User user) {
+    entityManager.persist(user);
+}
+
+******************************************************************************************************************************************************************
+
+8. DataIntegrityViolationException
+
+Error Scenario: Violating Database Constraints
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+@Service
+public class UserService {
+
+    @Autowired
+    private UserRepository userRepository;
+
+    public void createUser() {
+        User user = new User(); // ❌ Null values for non-nullable columns
+        userRepository.save(user);
+    }
+}
+
+Solution:
+Ensure required fields are set before saving:
+
+user.setName("John Doe");
+userRepository.save(user);
+
+******************************************************************************************************************************************************************
+
+
+9. LazyInitializationException
+
+Error Scenario: Accessing a Lazy-Loaded Entity Outside of a Transaction
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.ManyToOne;
+
+@Entity
+public class Order {
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Customer customer;
+}
+
+
+
+public void printCustomerName(Order order) {
+    System.out.println(order.getCustomer().getName()); // ❌ LazyInitializationException
+}
+
+
+Solution:
+Use @Transactional or initialize the entity within a transaction:
+
+@Transactional
+public void printCustomerName(Order order) {
+    System.out.println(order.getCustomer().getName());
+}
+
+******************************************************************************************************************************************************************
+
+10. HttpMessageNotReadableException
+
+Error Scenario: Sending Invalid JSON in a REST API
+
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/users")
+public class UserController {
+
+    @PostMapping
+    public void createUser(@RequestBody User user) { // ❌ Invalid JSON format
+        System.out.println(user.getName());
+    }
+}
+
+
+Solution:
+Ensure the JSON format is correct when sending requests.
+
+Invalid JSON (Causes Error):
+
+{
+    "name": "John",  // Missing closing quote
+    "age": 25
+}
+
+Correct JSON:
+{
+    "name": "John",
+    "age": 25
+}
+
+
+
+
+
+Summary of Common Errors
+Error	                                    Cause	                                                                Solution
+NoSuchBeanDefinitionException	            Bean not found	                                                    Define the bean using @Component, @Service, etc.
+BeanCurrentlyInCreationException	        Circular dependency	                                                Use @Lazy to break the cycle
+UnsatisfiedDependencyException	            Missing constructor dependency	                                    Define missing bean
+BeanDefinitionOverrideException	            Duplicate bean names	                                            Ensure unique bean names
+NoSuchMethodException	                    Private constructor in a bean	                                    Make the constructor public
+PropertyNotFoundException	                Missing property in application.properties	                        Define the missing property
+TransactionRequiredException	            JPA operation without transaction	                                Use @Transactional
+DataIntegrityViolationException	            Violating database constraints	                                    Ensure required fields are set
+LazyInitializationException	                Accessing lazy-loaded entity outside transaction	                Use @Transactional
+HttpMessageNotReadableException	            Invalid JSON in request	                                            Ensure correct JSON format
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

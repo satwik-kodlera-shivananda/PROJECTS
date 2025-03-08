@@ -1,0 +1,201 @@
+Complete Swagger Documentation for Java REST APIs Using Annotations
+In this guide, I will show you how to fully document Java REST APIs using Swagger (OpenAPI 3)
+ annotations with Spring Boot.
+
+ We'll cover different types of API requests, including GET, POST, PUT, and DELETE,
+ along with request/response handling and proper Swagger annotations.
+
+***********************************************************************************************************************************************************
+1. Setting Up Swagger in Spring Boot
+
+Step 1: Add Dependencies
+For Spring Boot 3, use the following Maven dependencies:
+<dependency>
+    <groupId>org.springdoc</groupId>
+    <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+    <version>2.0.2</version>
+</dependency>
+
+
+
+Once added, Swagger UI will be available at: http://localhost:8080/swagger-ui.html
+
+*******************************************************************************************************************************************************************
+
+2. Creating a User Model with Swagger Annotations
+
+
+Define a User entity with Swagger API schema annotations.
+
+package com.example.swagger.model;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Schema(description = "User entity representing a system user")
+public class User {
+
+    @Schema(description = "Unique identifier for the user", example = "1")
+    private Long id;
+
+    @Schema(description = "Full name of the user", example = "John Doe")
+    private String name;
+
+    @Schema(description = "Email address of the user", example = "john.doe@example.com")
+    private String email;
+}
+
+********************************************************************************************************************************************************************
+
+3. Creating a REST API Controller with Swagger Annotations
+
+
+
+package com.example.swagger.controller;
+
+import com.example.swagger.model.User;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/users")
+public class UserController {
+
+    private final List<User> users = new ArrayList<>();
+
+    public UserController() {
+        users.add(new User(1L, "John Doe", "john.doe@example.com"));
+        users.add(new User(2L, "Jane Doe", "jane.doe@example.com"));
+    }
+
+    /**
+     * Get a list of users
+     */
+    @Operation(summary = "Retrieve all users", description = "Fetch a list of all users")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved users",
+                content = @Content(mediaType = "application/json",
+                schema = @Schema(implementation = User.class)))
+    })
+    @GetMapping
+    public ResponseEntity<List<User>> getAllUsers() {
+        return ResponseEntity.ok(users);
+    }
+
+    /**
+     * Get a user by ID
+     */
+    @Operation(summary = "Get user by ID", description = "Retrieve user details by providing the user ID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "User found",
+                content = @Content(mediaType = "application/json",
+                schema = @Schema(implementation = User.class))),
+        @ApiResponse(responseCode = "404", description = "User not found")
+    })
+    @GetMapping("/{id}")
+    public ResponseEntity<User> getUserById(
+            @Parameter(description = "ID of the user to retrieve") @PathVariable Long id) {
+        return users.stream()
+                .filter(user -> user.getId().equals(id))
+                .findFirst()
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    /**
+     * Create a new user
+     */
+    @Operation(summary = "Create a new user", description = "Adds a new user to the system")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "User created successfully",
+                content = @Content(mediaType = "application/json",
+                schema = @Schema(implementation = User.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid request")
+    })
+    @PostMapping
+    public ResponseEntity<User> createUser(
+            @Parameter(description = "User data to be created") @RequestBody User user) {
+        user.setId((long) (users.size() + 1));
+        users.add(user);
+        return ResponseEntity.status(201).body(user);
+    }
+
+    /**
+     * Update a user by ID
+     */
+    @Operation(summary = "Update a user", description = "Modify an existing user's details")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "User updated successfully",
+                content = @Content(mediaType = "application/json",
+                schema = @Schema(implementation = User.class))),
+        @ApiResponse(responseCode = "404", description = "User not found")
+    })
+    @PutMapping("/{id}")
+    public ResponseEntity<User> updateUser(
+            @Parameter(description = "User ID to update") @PathVariable Long id,
+            @Parameter(description = "Updated user details") @RequestBody User updatedUser) {
+        for (User user : users) {
+            if (user.getId().equals(id)) {
+                user.setName(updatedUser.getName());
+                user.setEmail(updatedUser.getEmail());
+                return ResponseEntity.ok(user);
+            }
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    /**
+     * Delete a user by ID
+     */
+    @Operation(summary = "Delete a user", description = "Remove a user from the system")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "User deleted successfully"),
+        @ApiResponse(responseCode = "404", description = "User not found")
+    })
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteUser(
+            @Parameter(description = "ID of the user to delete") @PathVariable Long id) {
+        boolean removed = users.removeIf(user -> user.getId().equals(id));
+        return removed ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
+    }
+}
+
+********************************************************************************************************************************************************************
+
+4. Running the Swagger UI
+After running the Spring Boot application (mvn spring-boot:run), access Swagger UI at:
+👉 http://localhost:8080/swagger-ui.html
+
+5. Summary of API Endpoints with Swagger
+HTTP        Method	Endpoint	                Description
+GET	        /api/users	                        Retrieve all users
+GET	        /api/users/{id}                 	Get a specific user by ID
+POST	    /api/users	                        Create a new user
+PUT	        /api/users/{id}	                    Update a user by ID
+DELETE	    /api/users/{id}	                    Delete a user by ID
+
+
+
+6. Conclusion
+✅ Fully documented REST API with Swagger (OpenAPI 3)
+✅ Supports CRUD operations (GET, POST, PUT, DELETE)
+✅ Interactive API documentation available via Swagger UI
+
+
+
+
+

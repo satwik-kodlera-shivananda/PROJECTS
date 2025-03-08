@@ -1,0 +1,162 @@
+*************************************************************************************************************
+
+1. @ResponseBody
+Used to directly return data as a response body.
+Converts Java objects to JSON (or other formats).
+
+Example:
+    @GetMapping("/user")
+    @ResponseBody
+    public User getUser() {
+        return new User("John", "Doe");
+    }
+Equivalent to using @RestController at the class level.
+
+
+*************************************************************************************************************
+2. ResponseEntity<T>
+
+Allows returning the HTTP response status, headers, and body explicitly.
+
+More flexible than @ResponseBody.
+
+Example:
+
+@GetMapping("/user")
+public ResponseEntity<User> getUser() {
+    User user = new User("John", "Doe");
+    return ResponseEntity.ok(user);
+}
+
+
+
+Example with a custom status code:
+@PostMapping("/user")
+public ResponseEntity<String> createUser(@RequestBody User user) {
+    return new ResponseEntity<>("User created", HttpStatus.CREATED);
+}
+*************************************************************************************************************
+
+3. HttpServletResponse
+Allows direct manipulation of the response, such as setting headers and status codes.
+Example:
+
+@GetMapping("/download")
+public void downloadFile(HttpServletResponse response) throws IOException {
+    response.setContentType("text/plain");
+    response.setHeader("Content-Disposition", "attachment; filename=data.txt");
+    response.getWriter().write("Sample file content");
+}
+
+*************************************************************************************************************
+
+4. StreamingResponseBody
+Used for streaming large responses without keeping everything in memory.
+
+Example:
+
+@GetMapping("/stream")
+public StreamingResponseBody streamData() {
+    return outputStream -> {
+        for (int i = 0; i < 100; i++) {
+            outputStream.write(("Data chunk " + i + "\n").getBytes());
+            outputStream.flush();
+            Thread.sleep(100);
+        }
+    };
+}
+
+*************************************************************************************************************
+
+5. Callable<T>
+Asynchronous response processing.
+Example:
+
+@GetMapping("/async")
+public Callable<String> asyncResponse() {
+    return () -> {
+        Thread.sleep(2000);
+        return "Async response";
+    };
+}
+
+*************************************************************************************************************
+
+6. DeferredResult<T>
+More advanced async processing, allowing responses to be updated later.
+Example
+
+@GetMapping("/deferred")
+public DeferredResult<String> getDeferred() {
+    DeferredResult<String> result = new DeferredResult<>();
+    new Thread(() -> {
+        try {
+            Thread.sleep(2000);
+            result.setResult("Deferred response");
+        } catch (InterruptedException e) {
+            result.setErrorResult("Error occurred");
+        }
+    }).start();
+    return result;
+}
+
+*************************************************************************************************************
+
+
+7. SseEmitter (Server-Sent Events)
+Used for real-time event streaming.
+Example:
+
+@GetMapping("/sse")
+public SseEmitter getSseEmitter() {
+    SseEmitter emitter = new SseEmitter();
+    new Thread(() -> {
+        try {
+            for (int i = 0; i < 10; i++) {
+                emitter.send("Update " + i);
+                Thread.sleep(1000);
+            }
+            emitter.complete();
+        } catch (Exception e) {
+            emitter.completeWithError(e);
+        }
+    }).start();
+    return emitter;
+}
+
+*************************************************************************************************************
+
+Summary Table
+
+Response Type	                                    Description
+
+@ResponseBody	                            Converts Java objects to JSON and returns them directly.
+ResponseEntity<T>	                        Allows custom HTTP status, headers, and body.
+HttpServletResponse	                        Gives direct control over the response.
+StreamingResponseBody	                    Streams large data efficiently.
+Callable<T>	                                Asynchronous response handling.
+DeferredResult<T>	                        Advanced async processing.
+SseEmitter	                                Streams real-time events (Server-Sent Events).
+
+
+*************************************************************************************************************
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

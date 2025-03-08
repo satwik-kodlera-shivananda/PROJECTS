@@ -1,0 +1,105 @@
+What is Dependency Injection?
+Dependency Injection is a design pattern in which the dependencies of a class are injected by an external container
+instead of being created inside the class;
+
+Example of Dependency Injection
+Without DI (Tightly Coupled Code):
+
+public class Car {
+    private Engine engine = new Engine();  // Car is responsible for creating Engine
+}
+
+With DI (Loosely Coupled Code):
+
+@Component
+public class Car {
+    private final Engine engine;
+
+    @Autowired
+    public Car(Engine engine) {  // Engine is injected by Spring
+        this.engine = engine;
+    }
+}
+
+
+Here, the Engine dependency is provided externally, making Car more flexible and easier to test.
+
+
+***************************************************************************************************************************************************************
+What is Inversion of Control?
+Inversion of Control (IoC) is a broader concept where the control of object creation and dependency management
+is transferred from the programmer to the Spring IoC container.
+
+Example of IoC
+
+Without IoC (Manual Object Creation):
+
+public class Car {
+    Engine engine = new Engine(); // Developer controls object creation
+}
+
+
+With IoC (Spring Manages Object Creation):
+
+@Component
+public class Car {
+    @Autowired
+    private Engine engine; // Spring injects the object
+}
+
+Here, Spring is responsible for controlling the object lifecycle and injecting dependencies.
+
+***************************************************************************************************************************************************************
+
+5. Why Use IoC and DI?
+✅ Loosely Coupled Code – Easy to maintain and extend.
+✅ Easier Testing – Mock dependencies easily in unit tests.
+✅ Centralized Configuration – Dependencies managed by Spring.
+✅ Improved Scalability – Components can be reused independently.
+
+
+*************************************************************************************************************************************************************
+
+
+What are different ways to create an ApplicationContext
+
+
+ApplicationContext context = new ClassPathXmlApplicationContext("beans.xml");
+ApplicationContext context = new FileSystemXmlApplicationContext("C:/config/beans.xml");
+ApplicationContext context = new AnnotationConfigApplicationContext(AppConfig.class);
+
+
+What are Singleton and Prototype scopes in the Spring Container?
+
+Spring provides different bean scopes:
+
+Scope	                            Description
+Singleton	                    One instance per Spring Container (default).
+Prototype	                    A new instance is created each time it is requested.
+Request	                        A new instance is created per HTTP request (Web only).
+Session	                        A new instance is created per HTTP session (Web only).
+Application	                    A new instance is created per application lifecycle (Web only).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

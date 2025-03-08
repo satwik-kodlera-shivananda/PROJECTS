@@ -1,0 +1,339 @@
+********************************************************************************************************************************************************************
+
+1. HttpMessageNotReadableException: JSON parse error
+(Malformed JSON)
+
+❌ Invalid JSON
+
+{
+    "name": "John",
+    "age": 25,   // ❌ Trailing comma
+}
+
+
+✅ Correct JSON
+
+{
+    "name": "John",
+    "age": 25
+}
+
+
+🔹 Cause:
+
+The trailing comma after 25 is not allowed in JSON.
+🔹 Solution:
+
+Remove the trailing comma from the last key-value pair.
+
+
+********************************************************************************************************************************************************************
+
+
+2. HttpMessageNotReadableException: Cannot deserialize value of type (Wrong Data Type)
+
+❌ Invalid JSON (Wrong Data Type)
+
+{
+    "name": "John",
+    "age": "twenty-five"  // ❌ Age should be a number, but it's a string
+}
+
+✅ Correct JSON
+
+{
+    "name": "John",
+    "age": 25
+}
+
+
+🔹 Cause:
+
+The age field is expected to be a number, but a string ("twenty-five") was provided.
+🔹 Solution:
+
+Ensure that age is sent as a number (without quotes).
+
+********************************************************************************************************************************************************************
+
+
+3. HttpMessageNotReadableException: Unexpected character (Incorrect Boolean Value)
+❌ Invalid JSON (Incorrect Boolean)
+
+{
+    "name": "John",
+    "isActive": Yes  // ❌ "Yes" is not a valid JSON boolean
+}
+
+✅ Correct JSON
+
+{
+    "name": "John",
+    "isActive": true
+}
+
+🔹 Cause:
+
+JSON booleans must be true or false (not "Yes" or "No").
+🔹 Solution:
+
+Use true or false (without quotes).
+
+********************************************************************************************************************************************************************
+
+
+4. HttpMessageNotReadableException: Unrecognized field (Unknown Property)
+❌ Invalid JSON (Extra Property)
+
+{
+    "name": "John",
+    "age": 25,
+    "nickname": "Johnny"  // ❌ `nickname` is not in the Java class
+}
+
+✅ Correct JSON
+
+{
+    "name": "John",
+    "age": 25
+}
+
+🔹 Cause:
+
+The nickname field does not exist in the Java DTO (Data Transfer Object).
+🔹 Solution:
+
+Remove the unexpected property or modify the Java class to include it:
+
+@JsonIgnoreProperties(ignoreUnknown = true) // Allows extra fields without breaking
+public class User {
+    private String name;
+    private int age;
+}
+
+********************************************************************************************************************************************************************
+
+5. JsonMappingException: Cannot deserialize instance of X
+(Sending Array Instead of Object)
+
+❌ Invalid JSON (Array Instead of Object)
+[
+    {
+        "name": "John",
+        "age": 25
+    }
+]
+
+
+✅ Correct JSON (Object Instead of Array)
+{
+    "name": "John",
+    "age": 25
+}
+
+
+
+🔹 Cause:
+
+The API expects a single object, but an array was sent.
+🔹 Solution:
+
+If the API is expecting an object, send an object instead of an array.
+Or, if the API expects an array, update the Java class to accept a List<User>.
+
+********************************************************************************************************************************************************************
+
+6. JsonParseException: Unexpected character (Special Characters in JSON)
+
+❌ Invalid JSON (Unescaped Quotes)
+
+{
+    "message": "John said, "Hello!""  // ❌ Inner quotes are not escaped
+}
+
+✅ Correct JSON
+
+{
+    "message": "John said, \"Hello!\""
+}
+
+
+🔹 Cause:
+Double quotes (") inside a string must be escaped with a backslash (\").
+🔹 Solution:
+Escape quotes using \".
+
+********************************************************************************************************************************************************************
+
+
+7. JsonMappingException: Cannot deserialize value of type java.util.Date (Invalid Date Format)
+
+❌ Invalid JSON (Wrong Date Format)
+
+{
+    "name": "John",
+    "dateOfBirth": "25-12-1990"  // ❌ Incorrect format
+}
+
+
+
+✅ Correct JSON
+
+{
+    "name": "John",
+    "dateOfBirth": "1990-12-25"
+}
+
+
+🔹 Cause:
+
+The API expects a specific date format, but a different format was provided.
+🔹 Solution:
+
+Use the ISO-8601 format (YYYY-MM-DD).
+Or, tell Spring to accept custom formats using @JsonFormat:
+
+
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+import java.util.Date;
+
+public class User {
+    private String name;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
+    private Date dateOfBirth;
+}
+
+
+**********************************************************************************************************************************************************************
+
+
+8. HttpMediaTypeNotSupportedException: Content type 'text/plain' not supported
+
+❌ Sending Data as Text Instead of JSON
+If you send data as plain text instead of JSON, you might get this error.
+
+🔴 Wrong Request (Plain Text):
+
+POST /users
+Content-Type: text/plain
+
+name=John&age=25
+
+
+✅ Solution
+Ensure that the request has the correct Content-Type header:
+Content-Type: application/json
+
+✔ Correct JSON Payload:
+
+{
+    "name": "John",
+    "age": 25
+}
+
+**********************************************************************************************************************************************************************
+
+9. JsonMappingException: Infinite recursion (StackOverflowError)
+
+❌ Circular Relationship Between Entities
+
+
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
+@Entity
+public class Parent {
+    @OneToMany(mappedBy = "parent")
+    @JsonManagedReference
+    private List<Child> children;
+}
+
+@Entity
+public class Child {
+    @ManyToOne
+    @JsonBackReference
+    private Parent parent;
+}
+
+
+🔹 Cause:
+
+Bidirectional relationships cause infinite recursion during serialization.
+🔹 Solution:
+
+Use @JsonManagedReference and @JsonBackReference to break recursion.
+
+**********************************************************************************************************************************************************************
+
+
+
+10. JsonParseException: Illegal character (Non-UTF-8 Characters in JSON)
+❌ Invalid JSON (Encoding Issues)
+
+
+{
+    "name": "Jöhn",
+    "age": 25
+}
+🔹 Cause:
+
+Some systems expect UTF-8 encoding and fail if special characters (e.g., ö) are not properly encoded.
+🔹 Solution:
+
+Ensure that the API expects UTF-8 encoding.
+In Spring Boot, enforce UTF-8 in application.properties:
+
+spring.http.encoding.charset=UTF-8
+spring.http.encoding.enabled=true
+
+
+
+Summary of JSON Errors
+
+Error	Cause	Solution
+
+Trailing Comma Error	                    Extra comma at end                              Remove the trailing comma
+Wrong Data Type                             "age": "twenty-five" instead of number          Ensure correct data type
+Invalid Boolean                             "Yes" instead of true                           Use true or false
+Unrecognized Field                          Sending unknown property                        Use @JsonIgnoreProperties(ignoreUnknown = true)
+Array Instead of Object                     Sending [] instead of {}                        Match expected structure
+Special Characters Issue	                Unescaped quotes (")	                        Use \" inside strings
+Invalid Date Format	                        Wrong format like 25-12-1990	                Use ISO-8601 or @JsonFormat
+Incorrect Content-Type	                    Sending text instead of JSON	                Set Content-Type: application/json
+Circular Relationship	                    Parent-child infinite loop	                    Use @JsonManagedReference and @JsonBackReference
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

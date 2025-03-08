@@ -1,0 +1,169 @@
+1. Using Swagger UI (Easiest Method)
+
+Steps:
+
+Start the Spring Boot application
+Run the project using
+mvn spring-boot:run
+
+Open Swagger UI
+ Navigate to: http://localhost:8080/swagger-ui.html
+
+ Test API Endpoints
+ Click on an endpoint (e.g., GET /api/users).
+ Click "Try it out".
+ Enter required parameters (if any).
+ Click "Execute" to send the request.
+ View the Response Body, Response Code, and Curl Command.
+
+Example Response for GET /api/users
+ {
+   "users": [
+     {
+       "id": 1,
+       "name": "John Doe",
+       "email": "john.doe@example.com"
+     },
+     {
+       "id": 2,
+       "name": "Jane Doe",
+       "email": "jane.doe@example.com"
+     }
+   ]
+ }
+
+
+*****************************************************************************************************
+
+2. Using Postman (Manual API Testing)
+
+
+Steps:
+Download and Install Postman (Download Postman)
+Open Postman and create a new request
+Enter API URL (e.g., http://localhost:8080/api/users)
+Select HTTP Method (GET, POST, PUT, DELETE)
+If required, enter JSON request body for POST/PUT requests
+Click “Send” and check the response.
+
+Example: POST /api/users Request Body
+
+{
+  "name": "Alice",
+  "email": "alice@example.com"
+}
+
+
+Response (201 Created)
+
+{
+  "id": 3,
+  "name": "Alice",
+  "email": "alice@example.com"
+}
+
+
+
+*************************************************************************************************************************
+3. Using CURL (Command Line)
+
+Steps:
+
+Open Terminal or Command Prompt
+
+Run CURL commands
+
+GET request:
+curl -X GET http://localhost:8080/api/users
+
+
+POST request:
+curl -X POST http://localhost:8080/api/users -H "Content-Type: application/json" -d '{"name":"Alice","email":"alice@example.com"}'
+
+PUT request:
+curl -X PUT http://localhost:8080/api/users/1 -H "Content-Type: application/json" -d '{"name":"Updated Name","email":"updated@example.com"}'
+
+
+DELETE request:
+curl -X DELETE http://localhost:8080/api/users/1
+
+*************************************************************************************************************************
+
+4. Using Automated API Tests (JUnit & RestAssured)
+
+For automated testing, you can use RestAssured in a JUnit test.
+Example: JUnit Test with RestAssured
+
+
+import io.restassured.RestAssured;
+import io.restassured.http.ContentType;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.*;
+
+public class UserApiTest {
+
+    @BeforeAll
+    public static void setup() {
+        RestAssured.baseURI = "http://localhost:8080/api";
+    }
+
+    @Test
+    public void testGetUsers() {
+        given()
+            .when().get("/users")
+            .then()
+            .statusCode(200)
+            .body("size()", greaterThan(0));
+    }
+
+    @Test
+    public void testCreateUser() {
+        given()
+            .contentType(ContentType.JSON)
+            .body("{ \"name\": \"Alice\", \"email\": \"alice@example.com\" }")
+            .when().post("/users")
+            .then()
+            .statusCode(201)
+            .body("name", equalTo("Alice"));
+    }
+}
+
+
+Run the test using:
+
+mvn test
+
+
+Conclusion
+Method	                Best For
+Swagger UI	            Quick, interactive testing
+Postman	                Manual testing with history
+CURL	                Command-line testing
+JUnit + RestAssured	    Automated API testing
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

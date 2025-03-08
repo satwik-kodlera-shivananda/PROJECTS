@@ -1,0 +1,149 @@
+What is a Spring Bean?
+In Spring, A Bean is an Object Managed by the Spring IOC Container.
+A spring bean is created, initialized and managed by the container.
+it is typically defined in a configuration file.
+
+
+Different ways of Defining Spring Beans
+
+1> XML Configuration -> <bean id="myBean" class="com.example.MyBean"/>
+2> @Component annotation ->
+                            @Component
+                            public class MyBean { }
+
+3> @Bean annotation  ->
+
+ @Configuration
+                        public class AppConfig {
+                            @Bean
+                            public MyBean myBean() {
+                                return new MyBean();
+                            }
+                        }
+
+
+What is Spring IOC Container?
+Spring IOC Container is responsible for managing the life cycle and dependencies of Spring Beans.
+Container can be configured using XML, Java Annotations and or Java based Configurations.
+
+
+
+What are the different types of Spring Container?
+1> Bean Factory ->Lightweight container that provides basic dependency injection.
+2> Application Context Advanced container with support for event propagation, internationalization, and declarative features.
+
+
+What are the different scopes of spring bean?
+1>Singleton         ->Single instance per Spring container.
+2> Prototype        -> New instance every time a bean is requested
+3> Request          -> New instance per HTTP request (only in web applications)
+4> Session          -> New instance per HTTP session.
+5> Application      -> New instance per web application lifecycle.
+
+
+@Component
+@Scope("prototype")
+public class MyBean { }
+
+
+
+Different types of Dependency Injection?
+
+1> Constructor Injection
+@Component
+public class MyService {
+    private final MyRepository myRepository;
+
+    @Autowired
+    public MyService(MyRepository myRepository) {
+        this.myRepository = myRepository;
+    }
+}
+
+
+2> Setter Injection
+
+@Component
+public class MyService {
+    private MyRepository myRepository;
+
+    @Autowired
+    public void setMyRepository(MyRepository myRepository) {
+        this.myRepository = myRepository;
+    }
+}
+
+
+
+3> Field Injection
+@Component
+  public class MyService {
+      @Autowired
+      private MyRepository myRepository;
+  }
+
+
+ What is the difference between Singleton and Prototype scope?
+
+ Instances	One instance per container	->    New instance for each request
+ Lifecycle	Managed by Spring	        ->    Not fully managed by Spring
+ Use case	Shared resources	        ->    Stateful beans
+
+
+
+What is Bean lifeCycle in Spring?
+
+A Spring Bean goes through the following lifecycle phases:
+
+Instantiation
+Property population (Dependency Injection)
+@PostConstruct (if present)
+InitializingBean's afterPropertiesSet() method (if implemented)
+Custom initialization method (if defined in @Bean(initMethod="init"))
+Ready for use
+@PreDestroy (if present)
+DisposableBean's destroy() method (if implemented)
+Custom destroy method (if defined in @Bean(destroyMethod="destroy"))
+
+
+
+@Component
+public class MyBean {
+    @PostConstruct
+    public void init() {
+        System.out.println("Bean is initialized");
+    }
+
+    @PreDestroy
+    public void destroy() {
+        System.out.println("Bean is being destroyed");
+    }
+}
+
+
+
+
+@PostConstruct – Runs after bean initialization.
+@PreDestroy – Runs before bean is destroyed.
+
+
+
+What is Lazy Initialization in Spring?
+By default, Singleton beans are eagerly loaded. Lazy initialization delays bean creation until it is needed.
+
+
+@Primary ->If multiple beans of the same type exist, @Primary marks a default bean.
+@Qualifier-> is used to resolve ambiguity when multiple beans of the same type exist.
+
+Spring Profiles ->
+                   Spring Profiles allow defining different configurations for different environments (dev, test, prod).
+
+@Profile("dev")
+@Component
+public class DevDatabaseConfig { }
+
+
+
+
+
+

@@ -1,0 +1,14 @@
+Questions on @SpringBootApplication annotation
+
+@SpringBootApplication is a combination of 3 annotations
+1>  @EnableAutoConfiguration
+2>  @ComponentScan
+3>  @Configuration
+
+
+@EnableAutoConfiguration -> it tells springboot to automatically configure beans based on applications dependencies and settings.
+
+    customization :
+                    Developers can override or exclude specific auto-configurations using
+                    1> @SpringBootApplication(exclude = {DataSourceAutoConfiguration.class})
+                    2> spring.autoconfig.exclude=org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration

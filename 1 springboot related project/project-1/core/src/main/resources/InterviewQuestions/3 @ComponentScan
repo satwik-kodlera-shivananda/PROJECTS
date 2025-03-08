@@ -1,0 +1,256 @@
+@ComponentScan
+    it is an important annotation in spring used to automatically discover and configure
+    Spring components in a Spring application.
+
+    it scans specified packages for classes annotated with @component, @Service, @Controller, @Repository,
+    @Configuration, @Bean, etc.
+
+How @ComponentScan is related to @Configuration, @Service, @Repository, @Controller, @Bean?
+    it detects and register beans annotated with @component, @Service, @Controller, @Repository
+
+
+What is the Default behavior if base package is not specified?
+    If no base package is specified, Spring will scan all packages in the classpath.
+
+Can @ComponentScan be used without @Configuration ?
+    Yes, @ComponentScan can be used without @Configuration.However, this won’t be effective unless it's inside a class annotated with @Configuration.
+
+
+How @ComponentScan Work internally?
+    it uses ClassPathBeanDefinitionScanner to scan the specified package, and registers the discovered components as Spring beans.
+
+How do you define a base package for @ComponentScan?
+
+    @ComponentScan(basePackages = {"com.example.service", "com.example.dao"})
+
+
+Different ways to define scanning packages in Spring?
+
+    @ComponentScan(basePackages = {"com.example.service", "com.example.dao"})
+    @ComponentScan(basePackageClasses = {Service.class, Dao.class})
+    @ComponentScan(value = "com.example.service", excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = Dao.class))
+    @ComponentScan(value = "com.example.service")
+
+    includeFilters → Specifies what should be included in scanning.
+    excludeFilters → Specifies what should be excluded from scanning.
+
+    @ComponentScan(
+        basePackages = "com.example",
+        includeFilters = @ComponentScan.Filter(type = FilterType.ANNOTATION, classes = MyCustomAnnotation.class),
+        excludeFilters = @ComponentScan.Filter(type = FilterType.ANNOTATION, classes = Controller.class)
+    )
+
+    This includes components with @MyCustomAnnotation and excludes @Controller classes.
+
+
+What are different FilterType options available in @ComponentScan?
+    Spring provides different FilterType values:
+
+        ANNOTATION (default) – Filters by annotation type
+        ASSIGNABLE_TYPE – Filters by class type
+        REGEX – Filters by regular expressions on class names
+        ASPECTJ – Uses AspectJ expression patterns
+        CUSTOM – Uses a custom filter implementation
+
+How does @ComponentScan interact with @Import and @ImportResource?
+        @Import allows manual registration of configuration classes.
+        @ImportResource allows XML-based bean configuration.
+        @ComponentScan scans and registers beans automatically.
+
+
+@Configuration
+@Import(AnotherConfig.class)
+@ImportResource("classpath:beans.xml")
+@ComponentScan("com.example")
+public class AppConfig { }
+
+
+What is the difference between @ComponentScan and @EntityScan?
+        @ComponentScan is used for scanning Spring beans (@Component, @Service, etc.).
+        @EntityScan is used for scanning JPA entities (@Entity).
+
+
+How does Spring handle conflicts when multiple beans of the same type are scanned?
+
+If multiple beans of the same type are scanned, Spring throws a NoUniqueBeanDefinitionException. You can resolve this by:
+Using @Primary
+Using @Qualifier for explicit bean selection
+
+
+Can we programmatically define a custom component scan in Spring?
+    Yes, using ClassPathBeanDefinitionScanner:
+            AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
+            context.scan("com.example");
+            context.refresh();
+
+
+What is the impact of using @ComponentScan with lazy initialization?
+
+Using @Lazy, beans are not initialized until required, reducing startup time:
+
+@Component
+@Lazy
+public class LazyBean { }
+
+
+
+You can use @Profile to enable or disable components based on environments:
+
+@Profile("dev")
+@Component
+public class DevBean { }
+
+
+*****************************************************************************************************************************************
+
+Scenario: Multiple Beans of the Same Type
+    If you have multiple beans of the same type, Spring will throw a NoUniqueBeanDefinitionException.
+
+
+    Let's say we have two implementations of an interface PaymentService
+
+    1. Define the Interface
+        public interface PaymentService {
+        void processPayment();
+         }
+
+    2. Define Two Implementations
+
+    import org.springframework.stereotype.Service;
+
+    @Service
+    public class CreditCardPaymentService implements PaymentService {
+        @Override
+        public void processPayment() {
+            System.out.println("Processing payment with Credit Card");
+        }
+    }
+
+
+
+    import org.springframework.stereotype.Service;
+
+    @Service
+    public class PayPalPaymentService implements PaymentService {
+        @Override
+        public void processPayment() {
+            System.out.println("Processing payment with PayPal");
+        }
+    }
+
+
+
+    3. Injecting the Bean Without Handling Conflict
+
+
+    import org.springframework.beans.factory.annotation.Autowired;
+    import org.springframework.stereotype.Component;
+
+    @Component
+    public class PaymentProcessor {
+
+        private final PaymentService paymentService;
+
+        @Autowired
+        public PaymentProcessor(PaymentService paymentService) { // ❌ ERROR: NoUniqueBeanDefinitionException
+            this.paymentService = paymentService;
+        }
+
+        public void makePayment() {
+            paymentService.processPayment();
+        }
+    }
+
+
+    Since there are two implementations (CreditCardPaymentService and PayPalPaymentService),
+     Spring throws NoUniqueBeanDefinitionException, as it doesn’t know which one to inject.
+
+
+
+        Solution 1: Using @Primary
+
+
+        Mark one implementation as the default using @Primary:
+
+        import org.springframework.context.annotation.Primary;
+        import org.springframework.stereotype.Service;
+
+        @Primary
+        @Service
+        public class CreditCardPaymentService implements PaymentService {
+            @Override
+            public void processPayment() {
+                System.out.println("Processing payment with Credit Card");
+            }
+        }
+
+
+        Now, CreditCardPaymentService will be injected by default.
+
+
+
+        Solution 2: Using @Qualifier
+
+        Instead of @Primary, you can use @Qualifier to explicitly specify which bean to inject:
+
+        import org.springframework.beans.factory.annotation.Autowired;
+        import org.springframework.beans.factory.annotation.Qualifier;
+        import org.springframework.stereotype.Component;
+
+        @Component
+        public class PaymentProcessor {
+
+            private final PaymentService paymentService;
+
+            @Autowired
+            public PaymentProcessor(@Qualifier("payPalPaymentService") PaymentService paymentService) {
+                this.paymentService = paymentService;
+            }
+
+            public void makePayment() {
+                paymentService.processPayment();
+            }
+        }
+
+
+        Now, PayPalPaymentService will be injected.
+
+
+     Running the Application
+
+     import org.springframework.boot.SpringApplication;
+     import org.springframework.boot.autoconfigure.SpringBootApplication;
+     import org.springframework.context.ApplicationContext;
+
+     @SpringBootApplication
+     public class SpringBootExampleApplication {
+
+         public static void main(String[] args) {
+             ApplicationContext context = SpringApplication.run(SpringBootExampleApplication.class, args);
+
+             PaymentProcessor processor = context.getBean(PaymentProcessor.class);
+             processor.makePayment(); // Output: Processing payment with PayPal
+         }
+     }
+
+
+Summary
+Without specifying anything → NoUniqueBeanDefinitionException
+Using @Primary → One bean becomes the default
+Using @Qualifier → Explicitly specify which bean to use
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

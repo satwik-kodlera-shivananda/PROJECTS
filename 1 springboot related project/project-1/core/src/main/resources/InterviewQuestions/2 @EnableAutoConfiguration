@@ -1,0 +1,60 @@
+@EnableAutoConfiguration
+
+
+@EnableAutoConfiguration -> it tells springboot to automatically configure beans based on applications dependencies and settings.
+
+    customization :
+                    Developers can override or exclude specific auto-configurations using
+                    1> @SpringBootApplication(exclude = {DataSourceAutoConfiguration.class})
+                    2> spring.autoconfig.exclude=org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+
+
+How does @EnableAutoConfiguration work internally?
+
+    @EnableAutoConfiguration -> @Configuration + @Import(AutoConfigurationPackages.Register.class)
+    it uses SpringFactoriesLoader to load a list of auto-configuration classes from META-INF/spring.factories.
+
+
+Disable a Specific Autoconfiguration in Spring-Boot?
+
+    1> @SpringBootApplication(exclude = {DataSourceAutoConfiguration.class})
+    2> spring.autoconfig.exclude=org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+
+
+Where can you find list of Autoconfiguration classes in Spring-Boot?
+    we can find them in META-INF/spring.factories inside the spring-boot-autoconfigure JAR
+    To check the loaded auto-configurations, you can enable debugging:
+    logging.level.org.springframework.boot.autoconfigure=DEBUG
+
+How does springboot determine which auto-configuration classes to load?
+  Spring boot loads auto Configuration classes using the SpringFactoriesLoader and applies conditions like
+
+  @ConditionalOnClass
+  @ConditionalOnMissingBean
+  @ConditionalOnProperty
+
+  @ConditionalOnMissingClass        @ConditionalOnSingleCandidate
+  @ConditionalOnSingleCandidate       @ConditionalOnWebApplication
+  @ConditionalOnWebApplication        @ConditionalOnWebApplication.Type
+
+
+How to inspect which Autoconfiguration classes are enabled or disabled?
+    using SpringBoot Actuator Endpoint
+        /actuator/conditions
+        logging.level.org.springframework.boot.autoconfigure=DEBUG
+
+
+How @ConditionalOnClass and @ConditionalOnMissingBean related to Autoconfigure?
+    @ConditionalOnClass: Loads an auto-configuration class only if a specific class is present in the classpath.
+    @ConditionalOnMissingBean: Loads an auto-configuration class only if a specific bean is not present in the application context.
+
+
+How Can you write your custom auto-configuration in Spring Boot?
+    create a class with @Configuration and @ConditionalOnClass or @ConditionalOnMissingBean
+    Register it in META-INF/spring.factories
+    org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.example.MyCustomAutoConfiguration
+
+
+
+
+
